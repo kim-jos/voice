@@ -1,26 +1,67 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, StreamableFile } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { createReadStream } from 'fs';
+import { join } from 'path';
 import { CreateVoiceDto } from './dto/create-voice.dto';
-import { UpdateVoiceDto } from './dto/update-voice.dto';
+import { Voice } from './entities/voice.entity';
+import { VoiceRepository } from './voice.repository';
 
 @Injectable()
 export class VoiceService {
-  create(createVoiceDto: CreateVoiceDto) {
-    return 'This action adds a new voice';
+  private readonly logger = new Logger(VoiceService.name);
+
+  constructor(
+    @InjectRepository(Voice)
+    private readonly voiceRepository: VoiceRepository,
+  ) {}
+
+  async create(res, createVoiceDto: CreateVoiceDto) {
+    console.log('create ran');
+
+    await this.sleep(1000); // create voice
+    this.logger.log(createVoiceDto.text); // log voice
+
+    const localAudioFileAddress = join(
+      process.cwd(),
+      `temp-files/${createVoiceDto.model}.wav`,
+    );
+
+    if (createVoiceDto.reusable) {
+      await this.voiceRepository.save({
+        model: createVoiceDto.model,
+        text: createVoiceDto.text,
+        audio: localAudioFileAddress,
+      });
+    }
+
+    return this.getFile(res, localAudioFileAddress);
   }
 
-  findAll() {
-    return `This action returns all voice`;
+  async searchDb(res, createVoiceDto: CreateVoiceDto) {
+    console.log('search DB ran');
+
+    const file = await this.voiceRepository.findOne({
+      model: createVoiceDto.model,
+    });
+    if (!file) return this.create(res, createVoiceDto);
+
+    this.logger.log(createVoiceDto.text);
+
+    return this.getFile(res, file.audio);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} voice`;
+  private getFile(res, audioAddress): StreamableFile {
+    const audioFile = createReadStream(audioAddress);
+    res.set({
+      'Content-Type': 'audio/wav',
+      'Content-Disposition': `attachment; filename="${res.req.body.model}"`,
+    });
+    return new StreamableFile(audioFile);
   }
 
-  update(id: number, updateVoiceDto: UpdateVoiceDto) {
-    return `This action updates a #${id} voice`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} voice`;
+  private sleep(milliseconds) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, milliseconds);
+    });
   }
 }

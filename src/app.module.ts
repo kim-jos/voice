@@ -8,23 +8,11 @@ import { AuthMiddleware } from './auth/middleware/auth.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
 import { UsersRepository } from './user/users.repository';
+import { Voice } from './voice/entities/voice.entity';
+import { VoiceRepository } from './voice/voice.repository';
 
 @Module({
-  imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'Apap1879!@',
-      database: 'test',
-      entities: [User, UsersRepository],
-      synchronize: true,
-    }),
-    UsersModule,
-    VoiceModule,
-    AuthModule,
-  ],
+  imports: [TypeOrmModule.forRoot(), UsersModule, VoiceModule, AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })
