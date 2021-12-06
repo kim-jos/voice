@@ -1,8 +1,14 @@
-import { Injectable, Logger, StreamableFile } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createReadStream } from 'fs';
 import { join } from 'path';
 import { CreateVoiceDto } from './dto/create-voice.dto';
+import { UpdateVoiceDto } from './dto/update-voice.dto';
 import { Voice } from './entities/voice.entity';
 import { VoiceRepository } from './voice.repository';
 
@@ -52,9 +58,11 @@ export class VoiceService {
 
   private getFile(res, audioAddress): StreamableFile {
     const audioFile = createReadStream(audioAddress);
+    const model = res.req.body.model;
+
     res.set({
       'Content-Type': 'audio/wav',
-      'Content-Disposition': `attachment; filename="${res.req.body.model}"`,
+      'Content-Disposition': `attachment; filename="${model}"`,
     });
     return new StreamableFile(audioFile);
   }
@@ -63,5 +71,29 @@ export class VoiceService {
     return new Promise((resolve) => {
       setTimeout(resolve, milliseconds);
     });
+  }
+
+  async update(updateVoiceDto: UpdateVoiceDto) {
+    const audio = await this.voiceRepository.findOne({
+      model: updateVoiceDto.model,
+    });
+    if (!audio) throw new NotFoundException('Audio file does not exist');
+
+    this.logger.log(updateVoiceDto);
+
+    Object.assign(audio, updateVoiceDto);
+
+    await this.voiceRepository.save(audio);
+
+    return `Update complete`;
+  }
+
+  async delete(model: number) {
+    const audio = await this.voiceRepository.findOne({ model });
+    if (!audio) throw new NotFoundException('Audio file does not exist');
+
+    await this.voiceRepository.delete(audio);
+
+    return `Delete complete`;
   }
 }
