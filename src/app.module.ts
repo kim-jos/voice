@@ -6,14 +6,20 @@ import { VoiceModule } from './voice/voice.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthMiddleware } from './auth/middleware/auth.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user/entities/user.entity';
-import { UsersRepository } from './user/users.repository';
-import { Voice } from './voice/entities/voice.entity';
-import { VoiceRepository } from './voice/voice.repository';
+import { TerminusModule } from '@nestjs/terminus';
+import { HealthController } from './health/health.controller';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(), UsersModule, VoiceModule, AuthModule],
-  controllers: [AppController],
+  imports: [
+    TypeOrmModule.forRoot(),
+    UsersModule,
+    VoiceModule,
+    AuthModule,
+    TerminusModule,
+    HttpModule,
+  ],
+  controllers: [AppController, HealthController],
   providers: [AppService],
 })
 export class AppModule {

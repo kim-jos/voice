@@ -1,21 +1,26 @@
-###
+### Test API Key
 GET http://localhost:3000/
 Content-Type: application/json
 apiKey: ca03na188ame03u1d78620de67282882a84
 
+### Health Check
+GET http://localhost:3000/health
+Content-Type: application/json
+apiKey: ca03na188ame03u1d78620de67282882a84
+
 ### Reusable is true
-POST http://localhost:3000/
+POST http://localhost:3000/voice
 Content-Type: application/json
 apiKey: ca03na188ame03u1d78620de67282882a84
 
 {
     "text": "random",
-    "model": 1,
+    "model": 3,
     "reusable": true
 }
 
 ### Reusable is false
-POST http://localhost:3000/
+POST http://localhost:3000/voice
 Content-Type: application/json
 apiKey: ca03na188ame03u1d78620de67282882a84
 
@@ -24,3 +29,4 @@ apiKey: ca03na188ame03u1d78620de67282882a84
     "model": 1,
     "reusable": true
 }
+
