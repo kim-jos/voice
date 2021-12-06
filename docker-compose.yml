@@ -1,0 +1,25 @@
+version: "3.7"
+services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: Joseph828!@
+      MYSQL_DATABASE: test
+      
+  api:
+      image: joseph/voice
+      build:
+          dockerfile: Dockerfile
+          context: .
+      depends_on: 
+          - db
+      environment: 
+          NODE_ENV: development
+          PORT: 3000
+      ports:
+          - "8080:3000"
+
